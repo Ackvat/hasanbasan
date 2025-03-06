@@ -6,17 +6,21 @@ from time import sleep
 
 import lib.motorService as motorService
 
-usleep = lambda x: sleep(x/1000000.0)
 
-motor1 = motorService.Motor([2, 3, 4])
-motor1.stepResolution = 1/8
+
+baseDelay = 0
+baseRange = 100
+
+baseResolution = 1/16
+
+motor1 = motorService.Motor([2, 3, 4], baseResolution)
 motor1.Enable()
 
-motor1.Step(200/motor1.stepResolution, 1000)
-#motor1.Rotate(360, 1.05)
-sleep(0.5)
-#motor1.Rotate(-360, 1)
-motor1.Step(-200/motor1.stepResolution, 900)
+motor2 = motorService.Motor([6, 7, 8], baseResolution)
+motor2.Enable()
+
+motor1.Rotate(180, 5)
 
 motor1.Disable()
+motor2.Disable()
 

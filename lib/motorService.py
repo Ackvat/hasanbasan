@@ -1,45 +1,37 @@
 from machine import Pin
-from time import sleep
-import math
-
-usleep = lambda x: sleep(x/1000000.0)
+import utime
 
 class Motor:
-    def __init__(self, controlPins):
-        self.EN = Pin(controlPins[0],Pin.OUT)
-        self.STEP = Pin(controlPins[1],Pin.OUT)
-        self.DIR = Pin(controlPins[2],Pin.OUT)
+    def __init__(self, controlPins, stepResolution):
+        self.pinEN = Pin(controlPins[0],Pin.OUT)
+        self.pinSTEP = Pin(controlPins[1],Pin.OUT)
+        self.pinDIR = Pin(controlPins[2],Pin.OUT)
 
-        self.stepResolution = 1
+        self.stepResolution = stepResolution
 
-        self.degreeToStep = (200/360)
-        self.minimumDelay = 1000
+        self.degreeToStep = 200/360
 
         self.Enable() 
 
-    def GetSteps(self, degree):
-        return degree*self.degreeToStep/self.stepResolution
-
     def Enable(self):
-        self.EN.value(0)
+        self.pinEN.value(0)
     
     def Disable(self):
-        self.EN.value(1)
+        self.pinEN.value(1)
 
     def Step(self, steps=0, delay=1000):
-        if steps >= 0: self.DIR.value(1) 
-        else: self.DIR.value(0)
+        if steps >= 0: self.pinDIR.value(1)
+        else: self.pinDIR.value(0)
 
-        absSteps = abs(steps)
-        
-        for i in range(absSteps):
-            self.STEP.value(1)
-            usleep(delay)
-            self.STEP.value(0)
-            usleep(delay)
-    
-    def Rotate(self, degree=0, speed=1):
-        if degree >= 0: self.DIR.value(1) 
-        else: self.DIR.value(0)
+        steps = abs(steps)
 
-        self.Step(math.floor(self.GetSteps(degree)), self.minimumDelay/speed)
+        for i in range(steps):
+            self.pinSTEP.value(1)
+            utime.sleep_us(int(delay))
+            self.pinSTEP.value(0)
+            utime.sleep_us(int(delay))
+
+    def Rotate(self, degree, speed):
+        for i in range((degree * self.degreeToStep) / self.stepResolution):
+            if degree >= 0: self.Step(steps=1, delay=1000/speed)
+            else: self.Step(steps=-1, delay=1000/speed)
