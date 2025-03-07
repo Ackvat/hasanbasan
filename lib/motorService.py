@@ -9,7 +9,7 @@ class Motor:
 
         self.stepResolution = stepResolution
 
-        self.degreeToStep = 200/360
+        self.stepsPerRevolution = 200
 
         self.Enable() 
 
@@ -20,18 +20,8 @@ class Motor:
         self.pinEN.value(1)
 
     def Step(self, steps=0, delay=1000):
-        if steps >= 0: self.pinDIR.value(1)
-        else: self.pinDIR.value(0)
-
-        steps = abs(steps)
-
         for i in range(steps):
             self.pinSTEP.value(1)
             utime.sleep_us(int(delay))
             self.pinSTEP.value(0)
             utime.sleep_us(int(delay))
-
-    def Rotate(self, degree, speed):
-        for i in range((degree * self.degreeToStep) / self.stepResolution):
-            if degree >= 0: self.Step(steps=1, delay=1000/speed)
-            else: self.Step(steps=-1, delay=1000/speed)

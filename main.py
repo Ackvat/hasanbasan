@@ -1,26 +1,27 @@
+from machine import Pin
+import utime
+
 import sys
 sys.path.append('/lib')
 
-from machine import Pin
-from time import sleep
-
 import lib.motorService as motorService
-
-
-
-baseDelay = 0
-baseRange = 100
+import lib.axisService as axisService
 
 baseResolution = 1/16
 
-motor1 = motorService.Motor([2, 3, 4], baseResolution)
-motor1.Enable()
+gantry = axisService.Gantry([motorService.Motor([2, 3, 4], baseResolution),
+                             motorService.Motor([6, 7, 8], baseResolution)])
 
-motor2 = motorService.Motor([6, 7, 8], baseResolution)
-motor2.Enable()
+gantry.motors[1].stepsPerRevolution = 230
 
-motor1.Rotate(180, 5)
+gantry.EnableGantry()
 
-motor1.Disable()
-motor2.Disable()
+utime.sleep(1)
 
+gantry.MoveX(200 / baseResolution, 0, 0)
+
+utime.sleep(1)
+
+#gantry.MoveX(0 / baseResolution, 0, 0)
+
+gantry.DisableGantry()
