@@ -4,48 +4,20 @@ import utime
 import sys
 sys.path.append('/lib')
 
-import lib.motorService as motorService
-import lib.axisService as axisService
+import lib.machineService as machineService
 
-testMode = 1
+gantry = machineService.Gantry([machineService.Motor([2, 3, 4]),
+                             machineService.Motor([6, 7, 8])])
 
-gantry = axisService.Gantry([motorService.Motor([2, 3, 4]),
-                             motorService.Motor([6, 7, 8])])
+finished = False
 
-gantry.EnableGantry()
-
-if testMode == 0:
-    for i in range(1):
-
-        gantry.MoveY(25, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveX(100, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveY(50, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveX(0, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveY(75, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveX(100, 0)
-        utime.sleep(0.5)
-
-        gantry.MoveY(100, 0)
-        utime.sleep(0.5)
-elif testMode == 1:
-    currentPos = [0, 0]
-    for b in range(10):
-        gantry.MoveX(currentPos[0]+1, 0)
-        currentPos[0] = currentPos[0] + 1
-        gantry.MoveY(currentPos[1]+1, 0)
-        currentPos[1] = currentPos[1] + 1
-
-
-utime.sleep(1)
-
-gantry.DisableGantry()
+while finished == False:
+    try:
+        gantry.EnableGantry()
+        zeroX = Pin(16, Pin.IN, Pin.PULL_DOWN)
+        zeroY = Pin(17, Pin.IN, Pin.PULL_DOWN)
+        print(zeroX.value(), zeroY.value())
+        utime.sleep(1)
+    except KeyboardInterrupt:
+        gantry.DisableGantry()
+        finished = True
