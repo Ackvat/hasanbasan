@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "cinbasan"
+		},
+		{
+			"name": "Mpy Remote Workspace",
+			"uri": "pico:"
+		}
+	],
+	"settings": {
+		"python.languageServer": "Pylance"
+	}
+}

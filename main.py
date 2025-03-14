@@ -1,23 +1,25 @@
 from machine import Pin
 import utime
-
 import sys
-sys.path.append('/lib')
 
+sys.path.append('/lib')
 import lib.machineService as machineService
 
-gantry = machineService.Gantry([machineService.Motor([2, 3, 4]),
-                             machineService.Motor([6, 7, 8])])
+machine = machineService.Machine(motors=[machineService.Motor([2, 3, 4]), machineService.Motor([5, 6, 7])])
 
 finished = False
 
+machine.gantry.Enable()
+
 while finished == False:
     try:
-        gantry.EnableGantry()
-        zeroX = Pin(16, Pin.IN, Pin.PULL_DOWN)
-        zeroY = Pin(17, Pin.IN, Pin.PULL_DOWN)
-        print(zeroX.value(), zeroY.value())
+        machine.serial.Write(machine.serial.serial0)
+
+        if machine.gantry.zeroX.value() == 1:
+            print("Zero X")
+        if machine.gantry.zeroY.value() == 1:
+            print("Zero Y")
         utime.sleep(1)
     except KeyboardInterrupt:
-        gantry.DisableGantry()
+        machine.gantry.Disable()
         finished = True

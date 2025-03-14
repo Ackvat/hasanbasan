@@ -1,26 +1,35 @@
-from machine import Pin
+import os
+from machine import Pin, UART
 import utime
+import sys
 
-class Motor:
-    def __init__(self, controlPins):
-        self.pinEN = Pin(controlPins[0],Pin.OUT)
-        self.pinSTEP = Pin(controlPins[1],Pin.OUT)
-        self.pinDIR = Pin(controlPins[2],Pin.OUT)
+class Machine:
+    def __init__(self, motors):
+        self.gantry = Gantry([motors[0], motors[1]])
+        self.serial = Serial()
 
-        self.stepsPerRevolution = 200
-        self.resolution = 1/16
-
-        self.Enable() 
-
-    def Enable(self):
-        self.pinEN.value(0)
+        self.systemFrequency = 60
     
-    def Disable(self):
-        self.pinEN.value(1)
 
-    def Step(self, steps=0, delay=0):
-        self.pinSTEP.value(1)
-        self.pinSTEP.value(0)
+
+class Serial:
+    def __init__(self):
+        self.serial0 = UART(1, baudrate=115200, tx=Pin(0), rx=Pin(1))
+
+        self.led = Pin("LED", Pin.OUT)
+
+    def Read(self, serialPort):
+        if serialPort.any():
+            data = serialPort.read().decode('utf-8').strip()
+            self.led.toggle()
+            utime.sleep(1)
+            self.led.toggle()
+            return data
+    
+    def Write(self, serialPort):
+        serialPort.write("Hello World".encode('utf-8'))
+
+
 
 class Gantry:
     def __init__(self, motors):
@@ -38,14 +47,17 @@ class Gantry:
         self.Kp = 1
         self.Kd = 0
 
+        self.zeroX = Pin(16, Pin.IN, Pin.PULL_DOWN)
+        self.zeroY = Pin(17, Pin.IN, Pin.PULL_DOWN)
+
         self.x = 0
         self.y = 0
 
-    def EnableGantry(self):
+    def Enable(self):
         self.motors[0].Enable()
         self.motors[1].Enable()
 
-    def DisableGantry(self):
+    def Disable(self):
         self.motors[0].Disable()
         self.motors[1].Disable()
 
@@ -97,3 +109,24 @@ class Gantry:
                 else:
                     self.MoveY(self.y - self.mmPerStep)
             utime.sleep_us(delay)
+
+
+
+class Motor:
+    def __init__(self, controlPins):
+        self.pinEN = Pin(controlPins[0],Pin.OUT)
+        self.pinSTEP = Pin(controlPins[1],Pin.OUT)
+        self.pinDIR = Pin(controlPins[2],Pin.OUT)
+
+        self.stepsPerRevolution = 200
+        self.resolution = 1/16
+
+    def Enable(self):
+        self.pinEN.value(0)
+    
+    def Disable(self):
+        self.pinEN.value(1)
+
+    def Step(self, steps=0, delay=0):
+        self.pinSTEP.value(1)
+        self.pinSTEP.value(0)
