@@ -141,17 +141,21 @@ class Gantry:
         self.positionType = 0
 
         self.x = 0
-        self.y = 0
-        self.z = 0
-
         self.tox = 0
+        self.y = 0
         self.toy = 0
+        self.z = 0
         self.toz = 0
 
-        self.f = 500000
-        self.tf = 1000000
-        self.maxf = 1000000
-        self.homef = 10000
+        self.f = 1000
+        self.tf = 2000
+        self.homef = 1000
+        self.maxf = 5000
+
+        self.a = 50
+        self.ta = 100
+        self.homea = 50
+        self.maxa = 300
 
     def Enable(self, command=None):
         self.motors[0].Enable()
@@ -176,6 +180,13 @@ class Gantry:
             self.positionType = 0
         elif command['G'] == 91:
             self.positionType = 1
+    
+    def SetMoveToPosition(self, command):
+        for i, (k, v) in enumerate(command.items()):
+            if k == 'X': self.tox = float(v)
+            elif k == 'Y': self.toy = float(v)
+            elif k == 'Z': self.toz = float(v)
+        
 
     def GetCurrentPosition(self, command):
         print("X: " + str(self.x) + " Y: " + str(self.y) + " Z: " + str(self.z) + " F: " + str(self.f) + " TF: " + str(self.tf))
@@ -183,23 +194,17 @@ class Gantry:
     def Move(self, command):
         if self.enabled == False: return
 
-        positionX, positionY, positionZ = self.x, self.y, self.z
-        for i, (k, v) in enumerate(command.items()):
-            if k == 'X': positionX = float(v)
-            elif k == 'Y': positionY = float(v)
-            elif k == 'Z': positionZ = float(v)
-
-        if positionX - self.x >= 0: directionX = 1
+        if self.tox - self.x >= 0: directionX = 1
         else: directionX = 0
 
-        if positionY - self.y >= 0: directionY = 1
+        if self.toy - self.y >= 0: directionY = 1
         else: directionY = 0
 
-        if positionZ - self.z >= 0: directionZ = 1
+        if self.toz - self.z >= 0: directionZ = 1
         else: directionZ = 0
-        
-        while abs(positionX - self.x) >= self.mmPerStep*self.errorRate or abs(positionY - self.y) >= self.mmPerStep*self.errorRate or abs(positionZ - self.z) >= self.mmPerStep*self.errorRate:
-            if abs(positionX - self.x) >= self.mmPerStep*self.errorRate:
+
+        while abs(self.tox - self.x) >= self.mmPerStep*self.errorRate or abs(self.toy - self.y) >= self.mmPerStep*self.errorRate or abs(self.toz - self.z) >= self.mmPerStep*self.errorRate:
+            if abs(self.tox - self.x) >= self.mmPerStep*self.errorRate:
                 if directionX == 1: 
                     self.motors[0].pinDIR.value(1)
                     self.motors[1].pinDIR.value(1)
@@ -214,7 +219,7 @@ class Gantry:
                 self.motors[0].Step(0)
                 self.motors[1].Step(0)
             
-            if abs(positionY - self.y) >= self.mmPerStep*self.errorRate:
+            if abs(self.toy - self.y) >= self.mmPerStep*self.errorRate:
                 if directionY == 1:
                     self.motors[0].pinDIR.value(1)
                     self.motors[1].pinDIR.value(0)
@@ -229,7 +234,7 @@ class Gantry:
                 self.motors[0].Step(0)
                 self.motors[1].Step(0)
 
-            if abs(positionZ - self.z) >= self.mmPerStep*self.errorRate:
+            if abs(self.toz - self.z) >= self.mmPerStep*self.errorRate:
                 if directionZ == 1:
                     self.z += self.zStep
                 elif directionZ == 0:
@@ -237,6 +242,7 @@ class Gantry:
                     
                 self.motors[2].Move(self.z)
 
+            # 1000000 mikrosaniye beklerse, saniye de 1 mm hareket eder.
             if command['G'] == 0:
                 utime.sleep_us(int(self.maxf / self.tf))
             elif command['G'] == 1:
