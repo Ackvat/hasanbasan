@@ -5,21 +5,19 @@ import sys
 sys.path.append('/lib')
 import lib.machineService as machineService
 
-machine = machineService.Machine(motors=[machineService.Motor([2, 3, 4]), machineService.Motor([5, 6, 7])])
+machine = machineService.Machine(motors=[machineService.StepMotor([2, 3, 4]), machineService.StepMotor([6, 7, 8]), machineService.ServoMotor(pin=10)])
+machine.gantry.Disable()
 
 finished = False
 
-machine.gantry.Enable()
-
 while finished == False:
     try:
-        machine.serial.Write(machine.serial.serial0)
+        command = machine.serial.Read()
 
-        if machine.gantry.zeroX.value() == 1:
-            print("Zero X")
-        if machine.gantry.zeroY.value() == 1:
-            print("Zero Y")
-        utime.sleep(1)
-    except KeyboardInterrupt:
+        if command is not None:
+            machine.InterpretCommand(command)
+            
+    except KeyboardInterrupt as error:
         machine.gantry.Disable()
         finished = True
+        print("Exiting...")
