@@ -1,11 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "cinbasan"
-		},
-		{
-			"name": "Mpy Remote Workspace",
-			"uri": "pico:"
+			"path": ".."
 		}
 	],
 	"settings": {

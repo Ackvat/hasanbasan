@@ -1,23 +1,31 @@
 from machine import Pin
 import utime
 import sys
+import _thread
 
 sys.path.append('/lib')
 import lib.machineService as machineService
 
-machine = machineService.Machine(motors=[machineService.StepMotor([2, 3, 4]), machineService.StepMotor([6, 7, 8]), machineService.ServoMotor(pin=10)])
+machine = machineService.Machine(motors={
+    'STX': machineService.StepMotor([2, 3, 4]), 
+    'STY': machineService.StepMotor([6, 7, 8]), 
+    'SEZ': machineService.ServoMotor(pin=10)})
 machine.gantry.Disable()
 
-finished = False
+machine.debug = False
+machine.exit = False
 
-while finished == False:
+machine.serial.Write("discoplotter 1.2a [\'$\' for help]")
+machine.serial.Write("ok")
+
+while machine.exit == False:
     try:
         command = machine.serial.Read()
-
+    
         if command is not None:
-            machine.InterpretCommand(command)
+            machine.ParseCommand(command)
             
     except KeyboardInterrupt as error:
         machine.gantry.Disable()
-        finished = True
+        machine.exit = True
         print("Exiting...")
